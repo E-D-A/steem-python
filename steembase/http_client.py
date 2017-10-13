@@ -179,6 +179,13 @@ class HttpClient(object):
             if response.status not in tuple(
                     [*response.REDIRECT_STATUSES, 200]):
                 logger.info('non 200 response:%s', response.status)
+                # try switching nodes before giving up
+                if _ret_cnt > 2:
+                    time.sleep(5 * _ret_cnt)
+                if _ret_cnt > 10:
+                    return self._return(response=response.status)
+                self.next_node()
+                return self.exec(name, *args, return_with_args=return_with_args, _ret_cnt=_ret_cnt + 1)
 
             return self._return(
                 response=response,
